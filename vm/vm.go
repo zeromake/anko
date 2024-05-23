@@ -2,12 +2,12 @@ package vm
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/mattn/anko/ast"
 	"github.com/mattn/anko/env"
+	"github.com/pkg/errors"
 )
 
 // Options provides options to run VM with
@@ -104,11 +104,11 @@ func recoverFunc(runInfo *runInfoStruct) {
 	}
 	switch value := recoverInterface.(type) {
 	case *Error:
-		runInfo.err = value
+		runInfo.err = errors.WithStack(value)
 	case error:
-		runInfo.err = value
+		runInfo.err = errors.WithStack(value)
 	default:
-		runInfo.err = fmt.Errorf("%v", recoverInterface)
+		runInfo.err = errors.Errorf("%v", recoverInterface)
 	}
 }
 
