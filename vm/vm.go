@@ -2,12 +2,13 @@ package vm
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/mattn/anko/ast"
 	"github.com/mattn/anko/env"
-	"github.com/pkg/errors"
+	"github.com/rotisserie/eris"
 )
 
 // Options provides options to run VM with
@@ -96,7 +97,6 @@ func newStringError(pos ast.Pos, err string) error {
 	return &Error{Message: err, Pos: pos.Position()}
 }
 
-// recoverFunc generic recover function
 func recoverFunc(runInfo *runInfoStruct) {
 	recoverInterface := recover()
 	if recoverInterface == nil {
@@ -104,11 +104,11 @@ func recoverFunc(runInfo *runInfoStruct) {
 	}
 	switch value := recoverInterface.(type) {
 	case *Error:
-		runInfo.err = errors.WithStack(value)
+		runInfo.err = eris.Wrap(value, "vm script recover")
 	case error:
-		runInfo.err = errors.WithStack(value)
+		runInfo.err = eris.Wrap(value, "vm error recover")
 	default:
-		runInfo.err = errors.Errorf("%v", recoverInterface)
+		runInfo.err = eris.Errorf("vm recover %v", recoverInterface)
 	}
 }
 
